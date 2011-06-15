@@ -9,10 +9,21 @@ Author URI: http://ben.balter.com
 License: GPL2
 */
 
-class DomainInspector {
+class DomainInventory {
+	
+	static $instance;
+	
+	function __construct() {
+		self::$instance = $this;
+		
+		
+	}
 
 }
 
+require_once( 'site-inspector/class-site-inspector.php' );
+new SiteInspector;
+new DomainInventory;
 
 
 ?>
