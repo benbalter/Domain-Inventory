@@ -12,10 +12,16 @@ License: GPL2
 class DomainInventory {
 	
 	static $instance;
+	static $inspector;
 	
 	function __construct() {
+		
 		self::$instance = $this;
 		
+		//grab site inspector
+		require_once( 'site-inspector/class-site-inspector.php' );
+		self::$inspector = new SiteInspector;
+
 		add_action( 'init', array( $this, 'register_cpt' ) );
 		
 	}
@@ -57,8 +63,7 @@ class DomainInventory {
 	
 }
 
-require_once( 'site-inspector/class-site-inspector.php' );
-new SiteInspector;
+
 new DomainInventory;
 
 
