@@ -69,7 +69,8 @@ class DomainInventory {
 		add_action( 'init', array( &$this, 'register_cts' ) );
 		add_action( 'admin_init', array( &$this, 'check_get' ) );
 		add_action( 'admin_init', array( &$this, 'meta_cb' ) );
-
+		add_filter( 'the_content', array( &$this, 'content_filter') , 10, 2 );
+		add_action( 'wp_head', array( &$this, 'css' ) );
 	}
 
 	function register_cpt() {
@@ -139,9 +140,9 @@ class DomainInventory {
 		add_post_meta( $post->ID, 'ip', $data['ip'], true );
 		
 		//status, ipv6, non-www, cdn, and cloud checks
-		$cts = array( 'status', 'ipv6', 'nonwww', 'cdn', 'cloud', 'server_software', 'cms', 'analytics', 'scripts');
+		//$cts = array( 'status', 'ipv6', 'nonwww', 'cdn', 'cloud', 'server_software', 'cms', 'analytics', 'scripts');
 				
-		foreach ( $cts as $ct ) {
+		foreach ( $this->cts as $ct=>$foo ) {
 			
 			if ( !isset( $data[$ct] ) )
 				continue;
@@ -186,6 +187,35 @@ class DomainInventory {
 		<a href="<?php echo add_query_arg( 'domain-inspect', true ); ?>">Refresh Data</a>
 	<?php }
 
+	function content_filter( $content ) {
+		global $post;
+
+		if ( $post->post_type != 'domain' )
+			return $content; 
+		
+		ob_start();
+		
+		foreach ( $this->cts as $ct=>$foo) {
+			$tax = get_taxonomy( $ct );
+			?>
+			<span class="label"><?php echo $tax->labels->name; ?></span>: <?php echo get_the_term_list( $post->ID, $ct);?><br />
+			<?php
+		}
+		
+		$metas = array( 'ip' );
+		foreach ( $metas as $meta ) { ?>
+			<span class="label"><?php echo $meta ?></span>: <?php echo get_post_meta( $post->ID, $meta, true); ?><br />
+		<?php 
+		}
+		echo "<br />";
+		$content = ob_get_contents();
+		ob_end_clean();
+		return $content;
+	}
+	
+	function css() { ?>
+	<style>.domain .label {font-weight: bold; }</style>
+	<?php }
 	
 }
 
