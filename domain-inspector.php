@@ -55,6 +55,10 @@ class DomainInventory {
 				'singular' => 'Script Library', 
 				'plural' => 'Scripts Libraries',
 			),
+			'https'=>array( 
+				'singular' => 'HTTPs Support', 
+				'plural' => 'HTTPs Support',
+			),
 		);
 	
 	function __construct() {
@@ -197,8 +201,11 @@ class DomainInventory {
 		
 		foreach ( $this->cts as $ct=>$foo) {
 			$tax = get_taxonomy( $ct );
+			$list = get_the_term_list( $post->ID, $ct);
+			if ( strlen( $list ) == 0 )
+				continue;
 			?>
-			<span class="label"><?php echo $tax->labels->name; ?></span>: <?php echo get_the_term_list( $post->ID, $ct);?><br />
+			<span class="label"><?php echo $tax->labels->name; ?></span>: <?php echo $list;?><br />
 			<?php
 		}
 		
