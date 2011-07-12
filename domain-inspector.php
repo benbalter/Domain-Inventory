@@ -15,6 +15,10 @@ class DomainInventory {
 	static $inspector;
 	
 	public $cts = array(
+			'agency'=>array( 
+				'singular' => 'Agency',
+				'plural' => 'Agencies',
+			),
 			'status'=>array( 
 				'singular' => 'Server Status', 
 				'plural' => 'Server Statuses',
