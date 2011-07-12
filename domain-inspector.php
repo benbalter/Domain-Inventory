@@ -2,7 +2,7 @@
 /*
 Plugin Name: Domain Inventory
 Plugin URI: 
-Description: 
+Description: Set of WordPress Custom Taxonomies and Custom Post Type to curate a list of domains
 Version: 0.1
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
@@ -146,9 +146,6 @@ class DomainInventory {
 		
 		//ip
 		add_post_meta( $post->ID, 'ip', $data['ip'], true );
-		
-		//status, ipv6, non-www, cdn, and cloud checks
-		//$cts = array( 'status', 'ipv6', 'nonwww', 'cdn', 'cloud', 'server_software', 'cms', 'analytics', 'scripts');
 				
 		foreach ( $this->cts as $ct=>$foo ) {
 			
@@ -168,6 +165,10 @@ class DomainInventory {
 			}
 	
 	function inspect_the_uninspected() {
+	
+		//remove time limit
+		set_time_limit( 0 );
+	
 		global $wpdb;
 		$domains = $wpdb->get_col( "SELECT id FROM wp_posts WHERE wp_posts.post_type = 'domain' AND id NOT IN (SELECT post_id from wp_postmeta WHERE meta_key = 'inspected')" );
 				
