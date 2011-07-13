@@ -149,10 +149,10 @@ class DomainInventory {
 				
 		foreach ( $this->cts as $ct=>$foo ) {
 			
-			if ( !isset( $data[$ct] ) )
-				continue;
-				
-			wp_set_post_terms( $post->ID, $data[$ct], $ct, true);
+			if ( !isset( $data[$ct] ) ) 
+				wp_set_post_terms( $post->ID, 'No', $ct, true);
+			else 
+				wp_set_post_terms( $post->ID, $data[$ct], $ct, true);
 		
 		}
 		
