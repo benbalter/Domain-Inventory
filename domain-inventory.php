@@ -147,13 +147,18 @@ class DomainInventory {
 		//ip
 		add_post_meta( $post->ID, 'ip', $data['ip'], true );
 				
-		foreach ( $this->cts as $ct=>$foo ) {
+		foreach ( $this->cts as $ct=>$foo ) { 
 			
-			if ( !isset( $data[$ct] ) ) 
-				wp_set_post_terms( $post->ID, 'No', $ct, true);
-			else 
-				wp_set_post_terms( $post->ID, $data[$ct], $ct, true);
-		
+			if ( isset( $data[$ct] ) ) {
+				
+				if ( $data[$ct] == false )
+					$data[$ct] = '0';
+			
+				wp_set_post_terms( $post->ID, array( $data[$ct] ), $ct, true);
+			
+			} else { 
+				wp_set_post_terms( $post->ID, array( '0' ), $ct, true);		
+			}
 		}
 		
 		//inspected flag
