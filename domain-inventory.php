@@ -154,8 +154,11 @@ class DomainInventory {
 			
 			if ( isset( $data[$ct] ) ) {
 				
-				if ( $data[$ct] == false )
-					$data[$ct] = '0';
+				if ( $data[$ct] === false )
+					$data[$ct] = 'none';
+					
+				if ( $data[$ct] === true )
+					$data[$ct] = 'yes';
 			
 				wp_set_post_terms( $post->ID, $data[$ct] , $ct, true);
 			
@@ -164,7 +167,7 @@ class DomainInventory {
 				if ( $ct == 'agency' )
 					continue; 
 				
-				wp_set_post_terms( $post->ID, array( '0' ), $ct, true);		
+				wp_set_post_terms( $post->ID, array( 'none' ), $ct, true);		
 			
 			}
 		}
@@ -179,15 +182,23 @@ class DomainInventory {
 	
 	function inspect_the_uninspected() {
 	
-		//remove time limit
 		set_time_limit( 0 );
 	
-		global $wpdb;
-		$domains = $wpdb->get_col( "SELECT id FROM wp_posts WHERE wp_posts.post_type = 'domain' AND id NOT IN (SELECT post_id from wp_postmeta WHERE meta_key = 'inspected')" );
-				
-		foreach ($domains as $domain) 
-			$this->inspect( $domain );
+		//get a random uninspected domain and inspect it
+		//this allows us to thread the inspections
+		while ( $domain = $this->get_uninspected_domain() )
+				$this->inspect( $domain );
 	
+	}
+	
+	function get_uninspected_domain( ) {
+	
+		global $wpdb;
+		
+		$sql = "SELECT id FROM wp_posts WHERE wp_posts.post_type = 'domain' AND id NOT IN (SELECT post_id from wp_postmeta WHERE meta_key = 'inspected') ORDER BY RAND() LIMIT 1";
+			
+		return $wpdb->get_var( $sql );
+
 	}
 	
 	function check_get( ) {
