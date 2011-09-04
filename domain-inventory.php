@@ -70,9 +70,11 @@ class DomainInventory {
 		self::$instance = $this;
 		
 		//grab site inspector
-		require_once( 'site-inspector/class-site-inspector.php' );
-		$this->inspector = new SiteInspector;
-
+		if ( !class_exists('SiteInspector') ) {
+			require_once( 'site-inspector/class-site-inspector.php' );
+			$this->inspector = new SiteInspector;
+		}
+		
 		add_action( 'init', array( &$this, 'register_cpt' ) );
 		add_action( 'init', array( &$this, 'register_cts' ) );
 		add_action( 'admin_init', array( &$this, 'check_get' ) );
@@ -86,27 +88,27 @@ class DomainInventory {
 
 	function register_cpt() {
 	
-	$labels = array(
-    'name' => _x('Domains', 'post type general name'),
-    'singular_name' => _x('Domain', 'post type singular name'),
-    'add_new' => _x('Add New', 'domain'),
-    'add_new_item' => __('Add New Domain'),
-    'edit_item' => __('Edit Domain'),
-    'new_item' => __('New Domain'),
-    'view_item' => __('View Domain'),
-    'search_items' => __('Search Domains'),
-    'not_found' =>  __('No domains found'),
-    'not_found_in_trash' => __('No domains found in Trash'), 
-    'parent_item_colon' => '',
-    'menu_name' => 'Domains',
-  );
-  $args = array(
-    'labels' => $labels,
-    'public' => true,
-    'has_archive' => true, 
-    'supports' => array('title', 'comments', 'custom-fields',	),
-  ); 
-  register_post_type('domain',$args);
+		$labels = array(
+	    'name' => _x('Domains', 'post type general name'),
+	    'singular_name' => _x('Domain', 'post type singular name'),
+	    'add_new' => _x('Add New', 'domain'),
+	    'add_new_item' => __('Add New Domain'),
+	    'edit_item' => __('Edit Domain'),
+	    'new_item' => __('New Domain'),
+	    'view_item' => __('View Domain'),
+	    'search_items' => __('Search Domains'),
+	    'not_found' =>  __('No domains found'),
+	    'not_found_in_trash' => __('No domains found in Trash'), 
+	    'parent_item_colon' => '',
+	    'menu_name' => 'Domains',
+	  );
+	  $args = array(
+	    'labels' => $labels,
+	    'public' => true,
+	    'has_archive' => true, 
+	    'supports' => array('title', 'comments', 'custom-fields',	),
+	  ); 
+	  register_post_type('domain',$args);
 	
 	}
 	
@@ -134,20 +136,14 @@ class DomainInventory {
 	
 	function inspect( $post_id ) {
 
-		//get post
 		$post = get_post( $post_id );
 
-		//verify post
 		if ( !$post )
 			return false;
 
-		//get data
 		$data = $this->inspector->inspect( $post->post_title );
 	
-		//md5 body
 		add_post_meta( $post->ID, 'md5', $data['md5'], true );
-		
-		//ip
 		add_post_meta( $post->ID, 'ip', $data['ip'], true );
 				
 		foreach ( $this->cts as $ct=>$foo ) { 
@@ -172,13 +168,11 @@ class DomainInventory {
 			}
 		}
 		
-		//inspected flag
 		add_post_meta( $post->ID, 'inspected', true , true );
 		
-		//return data
 		return $data;
 		
-			}
+	}
 	
 	function inspect_the_uninspected() {
 	
