@@ -143,14 +143,21 @@ class DomainInventory {
 
 		$data = $this->inspector->inspect( $post->post_title );
 	
+		//if site is down, don't add any of the CTs other than status
+		if ( $data['status'] == 'unreachable' ) {
+			wp_set_post_terms( $post->ID, 'unreachable', 'status', true);
+			add_post_meta( $post->ID, 'inspected', true , true );
+			return $data;
+		}	
+	
 		add_post_meta( $post->ID, 'md5', $data['md5'], true );
 		add_post_meta( $post->ID, 'ip', $data['ip'], true );
-				
+		
 		foreach ( $this->cts as $ct=>$foo ) { 
 			
 			if ( isset( $data[$ct] ) ) {
 				
-				if ( $data[$ct] === false )
+				if ( $data[$ct] === false || $data[$ct] == array())
 					$data[$ct] = 'none';
 					
 				if ( $data[$ct] === true )
@@ -233,15 +240,20 @@ class DomainInventory {
 		}
 		
 		$metas = array( 'ip' );
-		foreach ( $metas as $meta ) { ?>
-			<span class="label"><?php echo $meta ?></span>: <?php echo get_post_meta( $post->ID, $meta, true); ?><br />
+		foreach ( $metas as $meta ) { 
+		
+		$value = get_post_meta( $post->ID, $meta, true);
+		if ( !$value )
+			continue;
+		?>
+			<span class="label"><?php echo $meta ?></span>: <?php echo $value ?><br />
 		<?php 
 		}
 		
 		$md5 = get_post_meta( $post->ID, 'md5', true);
 		
 		$others = get_posts( array( 'meta_key' => 'md5', 'meta_value' => $md5, 'post_type' => 'domain' ) );
-		if ( sizeof( $others) > 1 ) {
+		if ( $md5 && sizeof( $others) > 1 ) {
 			echo '<span class="label">Duplicate Domains</span>: ';
 			$array = array();
 			foreach ( $others as $other ) {

@@ -10,6 +10,10 @@
 //not the best way, but only running this once and it gets the job done
 include('../../../wp-load.php'); 
 
+global $wpdb;
+if ( $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type='domain'" ) != 0 )
+	die( 'Already Imported' );
+	
 //init array
 $domains = array();
 
