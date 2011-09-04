@@ -79,6 +79,9 @@ class DomainInventory {
 		add_action( 'admin_init', array( &$this, 'meta_cb' ) );
 		add_filter( 'the_content', array( &$this, 'content_filter') , 10, 2 );
 		add_action( 'wp_head', array( &$this, 'css' ) );
+		
+		register_activation_hook( __FILE__ , 'flush_rewrite_rules');
+
 	}
 
 	function register_cpt() {
@@ -154,10 +157,15 @@ class DomainInventory {
 				if ( $data[$ct] == false )
 					$data[$ct] = '0';
 			
-				wp_set_post_terms( $post->ID, array( $data[$ct] ), $ct, true);
+				wp_set_post_terms( $post->ID, $data[$ct] , $ct, true);
 			
 			} else { 
+				
+				if ( $ct == 'agency' )
+					continue; 
+				
 				wp_set_post_terms( $post->ID, array( '0' ), $ct, true);		
+			
 			}
 		}
 		
@@ -211,7 +219,7 @@ class DomainInventory {
 		
 		foreach ( $this->cts as $ct=>$foo) {
 			$tax = get_taxonomy( $ct );
-			$list = get_the_term_list( $post->ID, $ct);
+			$list = get_the_term_list( $post->ID, $ct, null, ', ');
 			if ( strlen( $list ) == 0 )
 				continue;
 			?>
@@ -224,7 +232,34 @@ class DomainInventory {
 			<span class="label"><?php echo $meta ?></span>: <?php echo get_post_meta( $post->ID, $meta, true); ?><br />
 		<?php 
 		}
+		
+		$md5 = get_post_meta( $post->ID, 'md5', true);
+		
+		$others = get_posts( array( 'meta_key' => 'md5', 'meta_value' => $md5, 'post_type' => 'domain' ) );
+		if ( sizeof( $others) > 1 ) {
+			echo '<span class="label">Duplicate Domains</span>: ';
+			$array = array();
+			foreach ( $others as $other ) {
+				
+				if ( $other->ID == $post->ID )
+					continue;
+					
+				$array[] = '<a href="' . get_permalink( $other->ID ) . '">' . $other->post_title . '</a>';
+			}
+			echo implode(', ', $array);
+			echo "<br />";
+		}
+		
+		//visit link
+		echo '<span class="label">Visit</span>: <a href="http://';
+		
+		if ( !is_object_in_term( $post->ID, 'nonwww', '1') )
+			echo 'www.';
+			
+		echo $post->post_title . '" target="_blank">' . $post->post_title . '</a><br />';
+		
 		echo "<br />";
+		
 		$content = ob_get_contents();
 		ob_end_clean();
 		return $content;
