@@ -1,5 +1,5 @@
 <?php
-//in conjunction with Count Shortcode and Faceted Search Widget, generates HTML for initial post to aid in browsing inventory
+//in conjunction with Count Shortcode and Faceted Search Widget, generates HTML of initial post to aid in browsing inventory
 include('../../../wp-load.php'); 
 $skip = array( 'agency', 'server_software', 'ga');
 ?>
