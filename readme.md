@@ -22,3 +22,9 @@ Notes
 =====
 
 * The CMS and Script detection, although generally accurate, in not foolproof. It works by sniffing references to known elements of CMSs (such as WordPress's use of the wp-content directory), and may generated some false positives as a result.
+* To update the site-inspector submodule:
+```
+cd domain-inspector
+git submodule init
+git submodule update
+```
