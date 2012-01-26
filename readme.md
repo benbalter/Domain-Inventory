@@ -5,7 +5,7 @@
 * Uses [WordPress](http://wordpress.org) to organize data.
 * Uses [Site-Inspector](https://github.com/benbalter/Site-Inspector) to gather data. 
 * Recommend displaying with [Faceted Search Widget](http://wordpress.org/extend/plugins/faceted-search-widget/) and [Count Shortcode](http://wordpress.org/extend/plugins/count-shortcode/)
-* Example: http://dotgov.benbalter.com
+* Example: http://ben.balter.com/2011/09/07/analysis-of-federal-executive-domains/
 
 ## Included Files
 
