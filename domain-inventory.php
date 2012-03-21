@@ -65,6 +65,9 @@ class DomainInventory {
 			),
 		);
 	
+	/**
+	 * Register hooks with WP core, get the inspector
+	 */
 	function __construct() {
 		
 		self::$instance = $this;
@@ -77,15 +80,21 @@ class DomainInventory {
 		
 		add_action( 'init', array( &$this, 'register_cpt' ) );
 		add_action( 'init', array( &$this, 'register_cts' ) );
-		add_action( 'admin_init', array( &$this, 'check_get' ) );
+		add_action( 'init', array( &$this, 'check_get' ) );
 		add_action( 'admin_init', array( &$this, 'meta_cb' ) );
 		add_filter( 'the_content', array( &$this, 'content_filter') , 10, 2 );
 		add_action( 'wp_head', array( &$this, 'css' ) );
+		add_action( 'domain_inventory_hourly', array( &$this, 'hourly_cron' ) );
 		
-		register_activation_hook( __FILE__ , 'flush_rewrite_rules');
+		register_activation_hook( __FILE__ , 'flush_rewrite_rules' );
+		register_activation_hook( __FILE__ , 'activation' );
+		register_deactivation_hook( __FILE__ , 'deactivation' );
 
 	}
 
+	/**
+	 * Init custom post types
+	 */
 	function register_cpt() {
 	
 		$labels = array(
@@ -112,6 +121,9 @@ class DomainInventory {
 	
 	}
 	
+	/**
+	 * Init Custom Taxonomies
+	 */
 	function register_cts() {
 		
 		foreach ( $this->cts as $ct=>$names ) {
@@ -134,13 +146,16 @@ class DomainInventory {
 		}
 	}
 	
+	/**
+	 * Inspet domain based on domain id (postID)
+	 */
 	function inspect( $post_id ) {
 
 		$post = get_post( $post_id );
 
 		if ( !$post )
 			return false;
-
+		
 		$data = $this->inspector->inspect( $post->post_title );
 	
 		//if site is down, don't add any of the CTs other than status
@@ -181,6 +196,9 @@ class DomainInventory {
 		
 	}
 	
+	/**
+	 * Inspect as many uninspected domains as possible
+	 */
 	function inspect_the_uninspected() {
 	
 		set_time_limit( 0 );
@@ -192,6 +210,9 @@ class DomainInventory {
 	
 	}
 	
+	/**
+	 * Returns ID of random uninspected domain
+	 */
 	function get_uninspected_domain( ) {
 	
 		global $wpdb;
@@ -202,6 +223,34 @@ class DomainInventory {
 
 	}
 	
+	/**
+	 * Returns the ID of a random domain
+	 */
+	function get_random_domain() {
+	
+		global $wpdb;
+		
+		$sql = "SELECT id FROM wp_posts WHERE wp_posts.post_type = 'domain' ORDER BY RAND() LIMIT 1";
+			
+		return $wpdb->get_var( $sql );
+	
+	}
+	
+	/**
+	 * Callback to be run hourly to inspect as many domains as possible before timing out
+	 */
+	function hourly_cron() {
+		
+		//get a random domain and inspect it
+		//this allows us to continously update via cron 
+		while ( $domain = $this->get_random_domain() )
+				$this->inspect( $domain );
+	
+	}
+	
+	/**
+	 * Check for our callback in URL
+	 */
 	function check_get( ) {
 		if ( !isset( $_GET['domain-inspect'] ) )
 			return;
@@ -213,10 +262,16 @@ class DomainInventory {
 			
 	}
 	
+	/**
+	 * Register refresh metabox
+	 */
 	function meta_cb() {
 		add_meta_box( 'refresh', 'Refresh', array(&$this, 'refresh_metabox'), 'domain' );
 	}
 	
+	/**
+	 * Refresh Metabox Callback
+	 */
 	function refresh_metabox( $post ) { ?>
 		<a href="<?php echo add_query_arg( 'domain-inspect', true ); ?>">Refresh Data</a>
 	<?php }
@@ -282,9 +337,26 @@ class DomainInventory {
 		return $content;
 	}
 	
+	/**
+	 * Some front-end CSS
+	 */
 	function css() { ?>
 	<style>.domain .label {font-weight: bold; }</style>
 	<?php }
+	
+	/**
+	 * Set cron on activation
+	 */
+	function activation() {
+		wp_schedule_event( time(), 'hourly', 'domain_inventory_hourly' );
+	}
+	
+	/**
+	 * Clear Cron on deactivtion
+	 */
+	function deactivation() {
+		wp_clear_scheduled_hook( 'domain_inventory_hourly' );
+	}
 	
 }
 

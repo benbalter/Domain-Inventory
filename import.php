@@ -9,10 +9,6 @@
 
 //not the best way, but only running this once and it gets the job done
 include('../../../wp-load.php'); 
-
-global $wpdb;
-if ( $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type='domain'" ) != 0 )
-	die( 'Already Imported' );
 	
 //init array
 $domains = array();
@@ -25,10 +21,17 @@ if (($handle = fopen("domain_list.csv", "r")) !== FALSE) {
     fclose($handle);
 }
 
+global $wpdb;
+$db = $wpdb->get_col( "SELECT post_title FROM $wpdb->posts WHERE post_type = 'domain'" ); 
+
 //loop through domains and instert into WP
 $i = 0;
 foreach ( $domains as $domain ) {
 
+	//domain already added
+	if ( in_array( $domain['domain'], $db ) )
+		continue;
+		
 	//set up post object
 	$post = array();
 	$post['post_type'] = 'domain';
