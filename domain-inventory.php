@@ -80,7 +80,7 @@ class DomainInventory {
 		
 		add_action( 'init', array( &$this, 'register_cpt' ) );
 		add_action( 'init', array( &$this, 'register_cts' ) );
-		add_action( 'init', array( &$this, 'check_get' ) );
+		add_action( 'admin_init', array( &$this, 'check_get' ) );
 		add_action( 'admin_init', array( &$this, 'meta_cb' ) );
 		add_filter( 'the_content', array( &$this, 'content_filter') , 10, 2 );
 		add_action( 'wp_head', array( &$this, 'css' ) );
@@ -240,7 +240,7 @@ class DomainInventory {
 	 * Callback to be run hourly to inspect as many domains as possible before timing out
 	 */
 	function hourly_cron() {
-		
+	
 		//get a random domain and inspect it
 		//this allows us to continously update via cron 
 		while ( $domain = $this->get_random_domain() )
